@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Carpool - Share Rides, Save Money</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">🚗 College Carpool</div>
+            <div class="nav-menu">
+                <a href="#" id="loginBtn">Login</a>
+                <a href="#" id="signupBtn" class="btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Share Rides with Fellow Students</h1>
+            <p class="subtitle">Eco-friendly, cost-effective carpooling for college students</p>
+            <div class="hero-buttons">
+                <button class="btn-large btn-primary" id="getStartedBtn">Get Started</button>
+                <button class="btn-large btn-secondary" id="learnMoreBtn">Learn More</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2>Why Choose College Carpool?</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Save Money</h3>
+                    <p>Split travel costs with fellow students</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌱</div>
+                    <h3>Eco-Friendly</h3>
+                    <p>Reduce carbon footprint together</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Safe & Secure</h3>
+                    <p>Verified college students only</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Easy to Use</h3>
+                    <p>Find or offer rides in seconds</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeLogin">&times;</span>
+            <h2>Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary btn-block">Login</button>
+                <p class="form-footer">Don't have an account? <a href="#" id="switchToSignup">Sign up</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeSignup">&times;</span>
+            <h2>Create Account</h2>
+            <form id="signupForm">
+                <!-- ROLE SELECTION - NEW! -->
+                <div class="form-group">
+                    <label>I am a:</label>
+                    <div class="role-selection">
+                        <label class="role-option">
+                            <input type="radio" name="role" value="student" checked>
+                            <div class="role-card">
+                                <span class="role-icon">🎓</span>
+                                <strong>Student</strong>
+                                <small>Post & search rides</small>
+                            </div>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="role" value="driver">
+                            <div class="role-card">
+                                <span class="role-icon">🚗</span>
+                                <strong>Driver</strong>
+                                <small>Post rides only</small>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label>College Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="signupPhone" required>
+                </div>
+                <div class="form-group">
+                    <label>College ID</label>
+                    <input type="text" id="signupCollegeId" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Branch</label>
+                        <input type="text" id="signupBranch" placeholder="e.g., CSE" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Year</label>
+                        <select id="signupYear" required>
+                            <option value="">Select</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Vehicle info - shown only for drivers -->
+                <div class="form-group" id="vehicleInfoGroup" style="display:none;">
+                    <label>Vehicle Information</label>
+                    <input type="text" id="signupVehicle" placeholder="e.g., White Honda City, DL01AB1234">
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" required>
+                </div>
+                <button type="submit" class="btn-primary btn-block">Sign Up</button>
+                <p class="form-footer">Already have an account? <a href="#" id="switchToLogin">Login</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Your Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

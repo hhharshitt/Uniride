@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - College Carpool</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">👨‍💼 Admin Dashboard</div>
+            <div class="nav-menu">
+                <span id="userGreeting" class="admin-badge">Admin</span>
+                <button id="logoutBtn" class="btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="#" class="sidebar-item active" data-section="home">
+                    <span>📊</span> Overview
+                </a>
+                <a href="#" class="sidebar-item" data-section="users">
+                    <span>👥</span> Manage Users
+                </a>
+                <a href="#" class="sidebar-item" data-section="rides">
+                    <span>🚗</span> All Rides
+                </a>
+                <a href="#" class="sidebar-item" data-section="bookings">
+                    <span>📋</span> All Bookings
+                </a>
+                <a href="#" class="sidebar-item" data-section="analytics">
+                    <span>📈</span> Analytics
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Section -->
+            <section id="homeSection" class="content-section active">
+                <h2>System Overview</h2>
+                
+                <!-- Admin Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card stat-primary">
+                        <h4>Total Users</h4>
+                        <p class="stat-number" id="totalUsers">0</p>
+                        <small>👥 Registered</small>
+                    </div>
+                    <div class="stat-card stat-success">
+                        <h4>Active Rides</h4>
+                        <p class="stat-number" id="totalRides">0</p>
+                        <small>🚗 Posted</small>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <h4>Total Bookings</h4>
+                        <p class="stat-number" id="totalBookings">0</p>
+                        <small>📋 All time</small>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <h4>Pending Requests</h4>
+                        <p class="stat-number" id="pendingRequests">0</p>
+                        <small>⏳ Waiting</small>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <h3>Quick Actions</h3>
+                    <div class="admin-actions">
+                        <button class="btn-primary" onclick="viewAllUsers()">View All Users</button>
+                        <button class="btn-primary" onclick="viewAllRides()">View All Rides</button>
+                        <button class="btn-secondary" onclick="exportData()">Export Data</button>
+                        <button class="btn-secondary" onclick="refreshStats()">Refresh Stats</button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card">
+                    <h3>Recent Activity</h3>
+                    <div id="recentActivity"></div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="usersSection" class="content-section">
+                <h2>Manage Users</h2>
+                
+                <div class="card">
+                    <div class="admin-filters">
+                        <input type="text" id="searchUsers" placeholder="Search by name or email...">
+                        <select id="filterRole">
+                            <option value="all">All Roles</option>
+                            <option value="student">Students</option>
+                            <option value="driver">Drivers</option>
+                            <option value="admin">Admins</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="usersList"></div>
+            </section>
+
+            <!-- Rides Section -->
+            <section id="ridesSection" class="content-section">
+                <h2>All Rides</h2>
+                
+                <div class="card">
+                    <div class="admin-filters">
+                        <input type="text" id="searchRides" placeholder="Search by route...">
+                        <select id="filterStatus">
+                            <option value="all">All Status</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="ridesList"></div>
+            </section>
+
+            <!-- Bookings Section -->
+            <section id="bookingsSection" class="content-section">
+                <h2>All Bookings</h2>
+                
+                <div class="card">
+                    <div class="admin-filters">
+                        <select id="filterBookingStatus">
+                            <option value="all">All Status</option>
+                            <option value="REQUESTED">Requested</option>
+                            <option value="ACCEPTED">Accepted</option>
+                            <option value="REJECTED">Rejected</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="bookingsList"></div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analyticsSection" class="content-section">
+                <h2>Analytics & Reports</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Students</h4>
+                        <p class="stat-number" id="studentCount">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Drivers</h4>
+                        <p class="stat-number" id="driverCount">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Avg. Fare</h4>
+                        <p class="stat-number" id="avgFare">₹0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Success Rate</h4>
+                        <p class="stat-number" id="successRate">0%</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Popular Routes</h3>
+                    <div id="popularRoutes"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Top Users</h3>
+                    <div id="topUsers"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Your Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

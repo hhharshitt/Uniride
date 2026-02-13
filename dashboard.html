@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - College Carpool</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">🚗 College Carpool</div>
+            <div class="nav-menu">
+                <span id="userGreeting">Welcome!</span>
+                <span id="userRoleBadge" class="role-badge"></span>
+                <button id="logoutBtn" class="btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu" id="sidebarMenu">
+                <!-- Will be populated based on role -->
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Home Section -->
+            <section id="homeSection" class="content-section active">
+                <h2>Dashboard</h2>
+                
+                <!-- Stats (All Roles) -->
+                <div class="stats-grid" id="statsGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <!-- Quick Actions (Role-based) -->
+                <div class="card" id="quickActionsCard">
+                    <h3>Quick Actions</h3>
+                    <div id="quickActions"></div>
+                </div>
+
+                <!-- Recent Content -->
+                <div class="card">
+                    <h3 id="recentTitle">Recent Activity</h3>
+                    <div id="recentContent"></div>
+                </div>
+            </section>
+
+            <!-- Search Section (Student Only) -->
+            <section id="searchSection" class="content-section">
+                <h2>Search Rides</h2>
+                <div class="card">
+                    <div class="search-filters">
+                        <input type="text" id="searchDestination" placeholder="Destination">
+                        <input type="date" id="searchDate">
+                        <button class="btn-primary" id="searchRidesBtn">Search</button>
+                    </div>
+                </div>
+                <div id="searchResults"></div>
+            </section>
+
+            <!-- Post Ride Section (Student & Driver) -->
+            <section id="postSection" class="content-section">
+                <h2>Post a Ride</h2>
+                <div class="card">
+                    <form id="postRideForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>From</label>
+                                <input type="text" id="rideFrom" placeholder="e.g., Campus Hostel A" required>
+                            </div>
+                            <div class="form-group">
+                                <label>To</label>
+                                <input type="text" id="rideTo" placeholder="e.g., Railway Station" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="rideDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Time</label>
+                                <input type="time" id="rideTime" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Available Seats</label>
+                                <input type="number" id="rideSeats" min="1" max="6" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Total Fare (₹)</label>
+                                <input type="number" id="rideFare" min="1" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Vehicle Info (Optional)</label>
+                            <input type="text" id="rideVehicle" placeholder="e.g., White Honda City, DL01AB1234">
+                        </div>
+                        <div class="fare-preview">
+                            <strong>Cost per person:</strong> <span id="farePreview">₹0</span>
+                        </div>
+                        <button type="submit" class="btn-primary btn-block">Post Ride</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- My Rides Section (All Roles) -->
+            <section id="myridesSection" class="content-section">
+                <h2>My Rides</h2>
+                
+                <!-- Tabs (Role-based) -->
+                <div class="tabs" id="myRidesTabs">
+                    <!-- Will be populated based on role -->
+                </div>
+
+                <!-- Tab Contents -->
+                <div id="bookingsTab" class="tab-content">
+                    <div id="myBookingsList"></div>
+                </div>
+
+                <div id="driverTab" class="tab-content">
+                    <div id="driverRidesList"></div>
+                </div>
+            </section>
+
+            <!-- Profile Section (All Roles) -->
+            <section id="profileSection" class="content-section">
+                <h2>My Profile</h2>
+                <div class="card">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <span id="profileAvatar">👤</span>
+                        </div>
+                        <div class="profile-details">
+                            <h3 id="profileName">Loading...</h3>
+                            <p id="profileEmail">email@college.edu</p>
+                            <span id="profileRoleBadge" class="role-badge"></span>
+                            <div class="profile-stats">
+                                <span>⭐ <strong id="profileRating">5.0</strong></span>
+                                <span>🚗 <strong id="profileRides">0</strong> rides</span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="profile-fields">
+                        <div class="field">
+                            <label>Phone:</label>
+                            <span id="profilePhone">-</span>
+                        </div>
+                        <div class="field">
+                            <label>College ID:</label>
+                            <span id="profileCollegeId">-</span>
+                        </div>
+                        <div class="field">
+                            <label>Branch:</label>
+                            <span id="profileBranch">-</span>
+                        </div>
+                        <div class="field">
+                            <label>Year:</label>
+                            <span id="profileYear">-</span>
+                        </div>
+                        <div class="field" id="vehicleField" style="display:none;">
+                            <label>Vehicle:</label>
+                            <span id="profileVehicle">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Your Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/dashboard-roles.js"></script>
+</body>
+</html>
