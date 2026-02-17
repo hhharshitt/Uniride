@@ -1,6 +1,3 @@
-// Firebase Configuration
-// REPLACE WITH YOUR ACTUAL FIREBASE CONFIG!
-
 const firebaseConfig = {
   apiKey: "AIzaSyBqMxGKXVTIqgUZIaA5Qdqo65H94pSJOsY",
   authDomain: "unirideweb.firebaseapp.com",

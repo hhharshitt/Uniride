@@ -1,6 +1,3 @@
-// Main Page Logic (index.html)
-
-// Modal Controls
 const loginModal = document.getElementById('loginModal');
 const signupModal = document.getElementById('signupModal');
 const loginBtn = document.getElementById('loginBtn');
@@ -69,7 +66,7 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// Learn More button smooth scroll (if you add more sections)
+// Learn More button smooth scroll
 const learnMoreBtn = document.getElementById('learnMoreBtn');
 if (learnMoreBtn) {
     learnMoreBtn.addEventListener('click', () => {

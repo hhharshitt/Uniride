@@ -1,5 +1,3 @@
-// Authentication Logic with Role Selection
-
 // Login Form
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
@@ -69,8 +67,8 @@ if (signupForm) {
             return;
         }
         
-        // Auto-admin for specific email (CHANGE THIS EMAIL!)
-        if (email === 'admin@yourcollege.edu') {
+        // admin mail 
+        if (email === 'admin@muj.com') {
             role = 'admin';
         }
         
@@ -88,7 +86,7 @@ if (signupForm) {
                 collegeId: collegeId,
                 branch: branch,
                 year: year,
-                role: role,  // IMPORTANT: Save role!
+                role: role,  
                 rating: 5.0,
                 ridesCompleted: 0,
                 vehicleInfo: vehicleInfo,

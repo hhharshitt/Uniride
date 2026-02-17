@@ -1,5 +1,3 @@
-// Admin Dashboard Logic
-
 let currentAdmin = null;
 let allUsers = [];
 let allRides = [];

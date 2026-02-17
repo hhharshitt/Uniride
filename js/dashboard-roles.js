@@ -1,6 +1,3 @@
-// COMPLETE UPDATED dashboard-roles.js
-// Includes: Clear fare split + Complete ride feature
-
 let currentUser = null;
 let currentUserData = null;
 let userRole = 'student';
@@ -118,7 +115,7 @@ function initDashboard() {
         const fareInput = document.getElementById('rideFare');
         const farePreview = document.getElementById('farePreview');
 
-        // ⭐ UPDATED FARE CALCULATION WITH CLEAR EXPLANATION
+        // fare calculations
         const updateFare = () => {
             const seats = parseInt(seatsInput.value) || 0;
             const fare = parseFloat(fareInput.value) || 0;
@@ -154,7 +151,7 @@ function initDashboard() {
     loadDriverRides();
 }
 
-// ⭐ UPDATED: Build tabs with "Completed" option
+// completed option
 function buildMyRidesTabs() {
     const tabsContainer = document.getElementById('myRidesTabs');
     if (!tabsContainer) return;
@@ -226,7 +223,7 @@ function switchSection(section) {
     }
 }
 
-// ⭐ UPDATED: Switch tabs including completed
+// switch tabs using completed
 function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -614,7 +611,7 @@ async function loadDriverRides() {
     }
 }
 
-// ⭐ UPDATED: Create booking card with complete button
+// booking card with complete button
 function createBookingCard(booking, ride, isDriver) {
     const card = document.createElement('div');
     card.className = 'booking-card';
@@ -737,7 +734,7 @@ window.cancelBooking = async function(bookingId, rideId, currentStatus) {
     }
 };
 
-// ⭐ NEW: Complete Ride Function
+// complete ride function
 window.completeRide = async function(rideId) {
     if (!confirm('Mark this ride as completed?\n\nThis will:\n- Update ride status to COMPLETED\n- Update all accepted bookings to COMPLETED\n- Increase rides completed count for you and all passengers')) {
         return;
@@ -797,7 +794,7 @@ window.completeRide = async function(rideId) {
     }
 };
 
-// ⭐ NEW: Load Completed Rides
+// load completed rides
 async function loadCompletedRides() {
     let container = document.getElementById('completedTab');
     if (!container) {

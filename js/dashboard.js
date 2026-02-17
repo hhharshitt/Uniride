@@ -1,13 +1,8 @@
-// ===============================
-// DASHBOARD LOGIC (FIXED VERSION)
-// ===============================
-
 let currentUser = null;
 let currentUserData = null;
 
-// ===============================
 // AUTH STATE
-// ===============================
+
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
@@ -18,9 +13,9 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
-// ===============================
+
 // LOAD USER DATA
-// ===============================
+
 async function loadUserData() {
     try {
         const doc = await db.collection('users').doc(currentUser.uid).get();
@@ -29,7 +24,7 @@ async function loadUserData() {
             updateGreeting();
             loadProfile();
 
-            // ✅ APPLY ROLE PERMISSIONS
+            //  APPLY ROLE PERMISSIONS
             if (currentUserData.role) {
                 applyRolePermissions(currentUserData.role);
             }
@@ -39,9 +34,9 @@ async function loadUserData() {
     }
 }
 
-// ===============================
+
 // GREETING
-// ===============================
+
 function updateGreeting() {
     const greeting = document.getElementById("userGreeting");
     if (greeting && currentUserData?.name) {
@@ -49,9 +44,9 @@ function updateGreeting() {
     }
 }
 
-// ===============================
+
 // ROLE PERMISSIONS
-// ===============================
+
 function applyRolePermissions(role) {
     const postRideBtn = document.getElementById("post-ride-nav");
     const searchRideBtn = document.getElementById("search-ride-nav");
@@ -75,9 +70,9 @@ function applyRolePermissions(role) {
     }
 }
 
-// ===============================
+
 // INIT DASHBOARD
-// ===============================
+
 function initDashboard() {
 
     loadStats();
@@ -101,9 +96,9 @@ function initDashboard() {
     }
 }
 
-// ===============================
+
 // LOAD STATS
-// ===============================
+
 async function loadStats() {
     try {
         const ridesSnapshot = await db.collection("rides")
@@ -133,9 +128,9 @@ async function loadStats() {
     }
 }
 
-// ===============================
+
 // LOAD RECENT RIDES (FIXED QUERY)
-// ===============================
+
 async function loadRecentRides() {
     const container = document.getElementById("recentRidesList");
     if (!container) return;
@@ -168,9 +163,9 @@ async function loadRecentRides() {
     }
 }
 
-// ===============================
+
 // CREATE RIDE CARD (SAFE)
-// ===============================
+
 function createRideCard(ride) {
 
     const card = document.createElement("div");
@@ -192,9 +187,9 @@ function createRideCard(ride) {
     return card;
 }
 
-// ===============================
+
 // POST RIDE (SAFE VERSION)
-// ===============================
+
 async function postRide() {
 
     const from = document.getElementById("rideFrom").value;
@@ -244,9 +239,9 @@ async function postRide() {
     }
 }
 
-// ===============================
+
 // LOAD PROFILE (SAFE)
-// ===============================
+
 function loadProfile() {
 
     if (!currentUserData) return;
