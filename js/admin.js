@@ -119,11 +119,19 @@ async function loadAdminStats() {
         const usersSnapshot = await db.collection('users').get();
         document.getElementById('totalUsers').textContent = usersSnapshot.size;
 
-        // Total Rides
+        // Total Rides (Active and Upcoming)
         const ridesSnapshot = await db.collection('rides')
             .where('status', '==', 'ACTIVE')
             .get();
-        document.getElementById('totalRides').textContent = ridesSnapshot.size;
+        
+        const now = new Date();
+        const activeCount = ridesSnapshot.docs.filter(doc => {
+            const ride = doc.data();
+            const rideDateTime = parseRideDateTime(ride);
+            return rideDateTime >= now;
+        }).length;
+        
+        document.getElementById('totalRides').textContent = activeCount;
 
         // Total Bookings
         const bookingsSnapshot = await db.collection('bookings').get();
