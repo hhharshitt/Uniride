@@ -13,10 +13,13 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 async function loadUserData() {
+    console.log("loadUserData called. uid:", currentUser ? currentUser.uid : null);
     try {
         const doc = await db.collection('users').doc(currentUser.uid).get();
+        console.log("User doc exists:", doc.exists);
         if (doc.exists) {
             currentUserData = doc.data();
+            console.log("User data:", currentUserData);
             userRole = currentUserData.role || 'student';
             
             if (userRole === 'admin') {
@@ -26,11 +29,16 @@ async function loadUserData() {
             
             updateGreeting();
             loadProfile();
-            buildSidebarForRole();
-            setupRoleBadge();
+        } else {
+            console.warn("User doc does NOT exist for uid:", currentUser.uid);
+            userRole = 'student';
         }
     } catch (error) {
         console.error('Error loading user data:', error);
+        userRole = 'student';
+    } finally {
+        buildSidebarForRole();
+        setupRoleBadge();
     }
 }
 
@@ -149,6 +157,15 @@ function initDashboard() {
     loadRecentContent();
     loadMyBookings();
     loadDriverRides();
+    
+    // Initialize Google Maps and active ride monitoring
+    setTimeout(() => {
+        if (typeof initLiveTrackingMap === 'function') {
+            initLiveTrackingMap('liveMap');
+            renderNearbyCabs(DEFAULT_CENTER);
+            startActiveRideMonitoring();
+        }
+    }, 1000);
 }
 
 // completed option
@@ -220,6 +237,12 @@ function switchSection(section) {
         loadDriverRides();
     } else if (section === 'profile') {
         loadProfile();
+    } else if (section === 'home') {
+        if (typeof leafletMap !== 'undefined' && leafletMap) {
+            setTimeout(() => {
+                leafletMap.invalidateSize();
+            }, 100);
+        }
     }
 }
 
@@ -264,7 +287,15 @@ async function loadStats() {
                 .where('driverId', '!=', currentUser.uid)
                 .get();
             
-            const stat1 = createStatCard('Available Rides', ridesSnapshot.size, '🔍');
+            const now = new Date();
+
+            const activeCount = ridesSnapshot.docs.filter(doc => {
+                const ride = doc.data();
+                const rideDateTime = parseRideDateTime(ride);
+                return rideDateTime >= now;
+            }).length;
+
+            const stat1 = createStatCard('Available Rides', activeCount, '🔍');
             statsGrid.appendChild(stat1);
 
             const bookingsSnapshot = await db.collection('bookings')
@@ -276,17 +307,32 @@ async function loadStats() {
 
             const myRidesSnapshot = await db.collection('rides')
                 .where('driverId', '==', currentUser.uid)
+                .where('status', '==', 'ACTIVE')
                 .get();
             
-            const stat3 = createStatCard('Rides Posted', myRidesSnapshot.size, '🚗');
+            const activeMyRidesCount = myRidesSnapshot.docs.filter(doc => {
+                const ride = doc.data();
+                const rideDateTime = parseRideDateTime(ride);
+                return rideDateTime >= now;
+            }).length;
+            
+            const stat3 = createStatCard('Rides Posted', activeMyRidesCount, '🚗');
             statsGrid.appendChild(stat3);
             
         } else if (userRole === 'driver') {
             const myRidesSnapshot = await db.collection('rides')
                 .where('driverId', '==', currentUser.uid)
+                .where('status', '==', 'ACTIVE')
                 .get();
             
-            const stat1 = createStatCard('My Rides', myRidesSnapshot.size, '🚗');
+            const now = new Date();
+            const activeCount = myRidesSnapshot.docs.filter(doc => {
+                const ride = doc.data();
+                const rideDateTime = parseRideDateTime(ride);
+                return rideDateTime >= now;
+            }).length;
+            
+            const stat1 = createStatCard('My Rides', activeCount, '🚗');
             statsGrid.appendChild(stat1);
 
             const pendingSnapshot = await db.collection('bookings')
@@ -336,38 +382,56 @@ async function loadRecentContent() {
         if (userRole === 'student') {
             const snapshot = await db.collection('rides')
                 .where('status', '==', 'ACTIVE')
-                .where('driverId', '!=', currentUser.uid)
-                .orderBy('driverId')
-                .orderBy('dateTime', 'desc')
-                .limit(3)
                 .get();
 
-            if (snapshot.empty) {
+            const now = new Date();
+
+            let rides = snapshot.docs.map(doc => doc.data())
+                .filter(ride => {
+                    if (ride.driverId === currentUser.uid) return false;
+                    const rideDateTime = parseRideDateTime(ride);
+                    return rideDateTime >= now;
+                });
+            
+            rides.sort((a, b) => {
+                const aTime = a.dateTime ? (a.dateTime.seconds || 0) : 0;
+                const bTime = b.dateTime ? (b.dateTime.seconds || 0) : 0;
+                return bTime - aTime;
+            });
+
+            rides = rides.slice(0, 3);
+
+            if (rides.length === 0) {
                 container.innerHTML = '<div class="empty-state">No rides available</div>';
                 return;
             }
 
             container.innerHTML = '';
-            snapshot.forEach(doc => {
-                const ride = doc.data();
+            rides.forEach(ride => {
                 container.appendChild(createRideCard(ride, true));
             });
         } else if (userRole === 'driver') {
             const snapshot = await db.collection('bookings')
                 .where('driverId', '==', currentUser.uid)
                 .where('status', '==', 'REQUESTED')
-                .orderBy('requestedAt', 'desc')
-                .limit(3)
                 .get();
 
-            if (snapshot.empty) {
+            let bookings = snapshot.docs.map(doc => doc.data());
+            bookings.sort((a, b) => {
+                const aTime = a.requestedAt ? (a.requestedAt.seconds || 0) : 0;
+                const bTime = b.requestedAt ? (b.requestedAt.seconds || 0) : 0;
+                return bTime - aTime;
+            });
+
+            bookings = bookings.slice(0, 3);
+
+            if (bookings.length === 0) {
                 container.innerHTML = '<div class="empty-state">No pending requests</div>';
                 return;
             }
 
             container.innerHTML = '';
-            for (const doc of snapshot.docs) {
-                const booking = doc.data();
+            for (const booking of bookings) {
                 const rideDoc = await db.collection('rides').doc(booking.rideId).get();
                 if (rideDoc.exists) {
                     const ride = rideDoc.data();
@@ -403,12 +467,27 @@ async function searchRides(destination, date) {
         }
 
         container.innerHTML = '';
+        const now = new Date();
+        let count = 0;
         snapshot.forEach(doc => {
             const ride = doc.data();
             if (ride.driverId !== currentUser.uid) {
-                container.appendChild(createRideCard(ride, true));
+                const rideDateTime = parseRideDateTime(ride);
+                if (rideDateTime >= now) {
+                    container.appendChild(createRideCard(ride, true));
+                    count++;
+                }
             }
         });
+
+        if (count === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <p>No rides found for ${destination} on ${formatDate(date)}</p>
+                </div>
+            `;
+        }
     } catch (error) {
         console.error('Error searching rides:', error);
         showToast('Error searching rides', 'error');
@@ -461,25 +540,39 @@ function createRideCard(ride, showBookButton = true) {
 }
 
 window.requestSeat = async function(rideId, driverName, fareShare) {
+    console.log("requestSeat called:", { rideId, driverName, fareShare, uid: currentUser ? currentUser.uid : null });
     if (!confirm(`Request a seat on this ride?\nDriver: ${driverName}\nCost: ₹${fareShare.toFixed(0)}`)) {
+        console.log("requestSeat confirm cancelled by user");
         return;
     }
 
     try {
+        console.log("Querying existing bookings for student:", currentUser.uid, "ride:", rideId);
         const existing = await db.collection('bookings')
             .where('rideId', '==', rideId)
             .where('passengerId', '==', currentUser.uid)
             .get();
 
+        console.log("Existing bookings query result empty:", existing.empty);
         if (!existing.empty) {
-            showToast('You already have a booking for this ride', 'error');
-            return;
+            const activeBooking = existing.docs.find(doc => {
+                const status = doc.data().status;
+                return ['REQUESTED', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS'].includes(status);
+            });
+            if (activeBooking) {
+                console.warn("Active booking already exists:", activeBooking.id, activeBooking.data());
+                showToast('You already have an active booking for this ride', 'error');
+                return;
+            }
         }
 
+        console.log("Fetching ride details:", rideId);
         const rideDoc = await db.collection('rides').doc(rideId).get();
         const ride = rideDoc.data();
+        console.log("Ride details fetched:", ride);
 
         const bookingRef = db.collection('bookings').doc();
+        console.log("Writing new booking document with ID:", bookingRef.id);
         await bookingRef.set({
             id: bookingRef.id,
             rideId: rideId,
@@ -490,23 +583,31 @@ window.requestSeat = async function(rideId, driverName, fareShare) {
             fareShare: fareShare,
             requestedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        console.log("Booking document written successfully!");
 
         showToast('Seat requested! Wait for driver to accept', 'success');
         loadMyBookings();
     } catch (error) {
-        console.error('Error requesting seat:', error);
+        console.error('Error requesting seat:', error.message, error);
         showToast('Error requesting seat', 'error');
     }
 };
 
 async function postRide() {
-    const from = document.getElementById('rideFrom').value;
-    const to = document.getElementById('rideTo').value;
+    const fromInput = document.getElementById('rideFrom');
+    const toInput = document.getElementById('rideTo');
+    const from = fromInput.value;
+    const to = toInput.value;
     const date = document.getElementById('rideDate').value;
     const time = document.getElementById('rideTime').value;
     const seats = parseInt(document.getElementById('rideSeats').value);
     const fare = parseFloat(document.getElementById('rideFare').value);
     const vehicle = document.getElementById('rideVehicle').value;
+
+    const fromLat = fromInput.dataset.lat ? parseFloat(fromInput.dataset.lat) : DEFAULT_CENTER.lat;
+    const fromLng = fromInput.dataset.lng ? parseFloat(fromInput.dataset.lng) : DEFAULT_CENTER.lng;
+    const toLat = toInput.dataset.lat ? parseFloat(toInput.dataset.lat) : DEFAULT_CENTER.lat;
+    const toLng = toInput.dataset.lng ? parseFloat(toInput.dataset.lng) : DEFAULT_CENTER.lng;
 
     try {
         const rideRef = db.collection('rides').doc();
@@ -518,9 +619,11 @@ async function postRide() {
             driverName: currentUserData.name,
             from: from,
             to: to,
+            fromLatLng: { lat: fromLat, lng: fromLng },
+            toLatLng: { lat: toLat, lng: toLng },
             date: date,
             time: time,
-            dateTime: firebase.firestore.Timestamp.fromDate(new Date(date + ' ' + time)),
+            dateTime: firebase.firestore.Timestamp.fromDate(parseRideDateTime({ date: date, time: time })),
             seatsTotal: seats,
             seatsAvailable: seats,
             totalFare: fare,
@@ -552,18 +655,23 @@ async function loadMyBookings() {
         const snapshot = await db.collection('bookings')
             .where('passengerId', '==', currentUser.uid)
             .where('status', 'in', ['REQUESTED', 'ACCEPTED'])
-            .orderBy('requestedAt', 'desc')
             .get();
 
-        if (snapshot.empty) {
+        let bookings = snapshot.docs.map(doc => doc.data());
+        bookings.sort((a, b) => {
+            const aTime = a.requestedAt ? (a.requestedAt.seconds || 0) : 0;
+            const bTime = b.requestedAt ? (b.requestedAt.seconds || 0) : 0;
+            return bTime - aTime;
+        });
+
+        if (bookings.length === 0) {
             container.innerHTML = '<div class="empty-state">No active bookings</div>';
             return;
         }
 
         container.innerHTML = '';
         
-        for (const doc of snapshot.docs) {
-            const booking = doc.data();
+        for (const booking of bookings) {
             const rideDoc = await db.collection('rides').doc(booking.rideId).get();
             if (rideDoc.exists) {
                 const ride = rideDoc.data();
@@ -585,18 +693,23 @@ async function loadDriverRides() {
     try {
         const snapshot = await db.collection('bookings')
             .where('driverId', '==', currentUser.uid)
-            .orderBy('requestedAt', 'desc')
             .get();
 
-        if (snapshot.empty) {
+        let bookings = snapshot.docs.map(doc => doc.data());
+        bookings.sort((a, b) => {
+            const aTime = a.requestedAt ? (a.requestedAt.seconds || 0) : 0;
+            const bTime = b.requestedAt ? (b.requestedAt.seconds || 0) : 0;
+            return bTime - aTime;
+        });
+
+        if (bookings.length === 0) {
             container.innerHTML = '<div class="empty-state">No booking requests</div>';
             return;
         }
 
         container.innerHTML = '';
         
-        for (const doc of snapshot.docs) {
-            const booking = doc.data();
+        for (const booking of bookings) {
             if (booking.status === 'COMPLETED') continue; // Skip completed in active tab
             
             const rideDoc = await db.collection('rides').doc(booking.rideId).get();
@@ -618,11 +731,10 @@ function createBookingCard(booking, ride, isDriver) {
 
     const statusClass = `status-${booking.status.toLowerCase()}`;
     
-    // Check if ride date has passed (for complete button)
-    const rideDate = new Date(ride.date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const isPastRide = rideDate < today;
+    // Check if ride date/time has passed (for complete button)
+    const rideDateTime = parseRideDateTime(ride);
+    const now = new Date();
+    const isPastRide = rideDateTime < now;
 
     card.innerHTML = `
         <span class="booking-status ${statusClass}">${booking.status}</span>
@@ -890,9 +1002,30 @@ function loadProfile() {
     document.getElementById('profileRating').textContent = currentUserData.rating.toFixed(1);
     document.getElementById('profileRides').textContent = currentUserData.ridesCompleted || 0;
     document.getElementById('profilePhone').textContent = currentUserData.phone;
-    document.getElementById('profileCollegeId').textContent = currentUserData.collegeId;
-    document.getElementById('profileBranch').textContent = currentUserData.branch;
-    document.getElementById('profileYear').textContent = `${currentUserData.year}${getOrdinalSuffix(currentUserData.year)} Year`;
+    
+    const collegeIdSpan = document.getElementById('profileCollegeId');
+    const branchSpan = document.getElementById('profileBranch');
+    const yearSpan = document.getElementById('profileYear');
+
+    if (userRole === 'student') {
+        if (collegeIdSpan) {
+            collegeIdSpan.textContent = currentUserData.collegeId || '-';
+            if (collegeIdSpan.parentElement) collegeIdSpan.parentElement.style.display = 'flex';
+        }
+        if (branchSpan) {
+            branchSpan.textContent = currentUserData.branch || '-';
+            if (branchSpan.parentElement) branchSpan.parentElement.style.display = 'flex';
+        }
+        if (yearSpan) {
+            const yearVal = currentUserData.year || 0;
+            yearSpan.textContent = yearVal > 0 ? `${yearVal}${getOrdinalSuffix(yearVal)} Year` : '-';
+            if (yearSpan.parentElement) yearSpan.parentElement.style.display = 'flex';
+        }
+    } else {
+        if (collegeIdSpan && collegeIdSpan.parentElement) collegeIdSpan.parentElement.style.display = 'none';
+        if (branchSpan && branchSpan.parentElement) branchSpan.parentElement.style.display = 'none';
+        if (yearSpan && yearSpan.parentElement) yearSpan.parentElement.style.display = 'none';
+    }
     
     const avatar = document.getElementById('profileAvatar');
     if (avatar) {
@@ -923,3 +1056,140 @@ function getOrdinalSuffix(num) {
     if (j == 3 && k != 13) return 'rd';
     return 'th';
 }
+
+// REAL-TIME RIDE MONITORING & LISTENERS
+let activeUnsubscribes = [];
+
+function startActiveRideMonitoring() {
+    console.log("startActiveRideMonitoring called. role:", userRole, "uid:", currentUser ? currentUser.uid : null);
+    activeUnsubscribes.forEach(unsub => unsub());
+    activeUnsubscribes = [];
+
+    if (userRole === 'student') {
+        console.log("Setting up passenger bookings listener for passengerId:", currentUser.uid);
+        const passengerUnsub = db.collection('bookings')
+            .where('passengerId', '==', currentUser.uid)
+            .where('status', 'in', ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS'])
+            .onSnapshot(snapshot => {
+                console.log("Passenger active bookings snapshot change, empty:", snapshot.empty);
+                if (!snapshot.empty) {
+                    const booking = snapshot.docs[0].data();
+                    console.log("Active booking found for passenger:", booking);
+                    startRideTracking(booking, false);
+                } else {
+                    const card = document.getElementById('activeRideMapCard');
+                    if (card) card.style.display = 'none';
+                }
+            }, error => {
+                console.error("Passenger active bookings snapshot listener error:", error.message, error);
+            });
+        activeUnsubscribes.push(passengerUnsub);
+
+        console.log("Setting up student rejection listener for passengerId:", currentUser.uid);
+        const rejectionUnsub = db.collection('bookings')
+            .where('passengerId', '==', currentUser.uid)
+            .where('status', '==', 'REJECTED')
+            .onSnapshot(snapshot => {
+                console.log("Student rejection snapshot changed, size:", snapshot.size);
+                snapshot.docChanges().forEach(async (change) => {
+                    console.log("Student rejection change type:", change.type);
+                    if (change.type === 'added' || change.type === 'modified') {
+                        const booking = change.doc.data();
+                        console.log("Decline received for booking:", booking);
+                        showToast("1 rider have cancelled the ride", "error");
+                        await db.collection('bookings').doc(booking.id).update({
+                            status: 'REJECTED_ACKNOWLEDGED'
+                        });
+                    }
+                });
+            }, error => {
+                console.error("Student rejection snapshot listener error:", error.message, error);
+            });
+        activeUnsubscribes.push(rejectionUnsub);
+    } 
+    else if (userRole === 'driver') {
+        console.log("Setting up driver active bookings listener for driverId:", currentUser.uid);
+        const driverUnsub = db.collection('bookings')
+            .where('driverId', '==', currentUser.uid)
+            .where('status', 'in', ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS'])
+            .onSnapshot(snapshot => {
+                console.log("Driver active bookings snapshot changed, empty:", snapshot.empty);
+                if (!snapshot.empty) {
+                    const booking = snapshot.docs[0].data();
+                    console.log("Active booking found for driver:", booking);
+                    startRideTracking(booking, true);
+                } else {
+                    const card = document.getElementById('activeRideMapCard');
+                    if (card) card.style.display = 'none';
+                }
+            }, error => {
+                console.error("Driver active bookings snapshot listener error:", error.message, error);
+            });
+        activeUnsubscribes.push(driverUnsub);
+
+        console.log("Setting up driver ride requests listener for driverId:", currentUser.uid);
+        const requestsUnsub = db.collection('bookings')
+            .where('driverId', '==', currentUser.uid)
+            .where('status', '==', 'REQUESTED')
+            .onSnapshot(snapshot => {
+                console.log("Driver ride requests snapshot changed, size:", snapshot.size);
+                const existingModal = document.getElementById('driverRequestModal');
+                const existingBackdrop = document.getElementById('driverRequestBackdrop');
+                if (existingModal) {
+                    console.log("Removing existing request modal");
+                    existingModal.remove();
+                }
+                if (existingBackdrop) existingBackdrop.remove();
+
+                if (!snapshot.empty) {
+                    const booking = snapshot.docs[0].data();
+                    console.log("Showing ride request modal for booking:", booking);
+                    showDriverRequestModal(booking);
+                }
+            }, error => {
+                console.error("Driver ride requests snapshot listener error:", error.message, error);
+            });
+        activeUnsubscribes.push(requestsUnsub);
+    }
+}
+
+function showDriverRequestModal(booking) {
+    const backdrop = document.createElement('div');
+    backdrop.id = 'driverRequestBackdrop';
+    backdrop.className = 'modal-backdrop';
+
+    const modal = document.createElement('div');
+    modal.id = 'driverRequestModal';
+    modal.className = 'driver-request-modal';
+
+    modal.innerHTML = `
+        <h3 style="margin-bottom: 1rem; color: var(--primary);">🚗 New Ride Request!</h3>
+        <p style="margin-bottom: 0.5rem;"><strong>Passenger:</strong> ${booking.passengerName}</p>
+        <p style="margin-bottom: 0.5rem;"><strong>Fare Share:</strong> ₹${booking.fareShare.toFixed(0)}</p>
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button class="btn-primary" style="flex: 1;" onclick="acceptRequestedBooking('${booking.id}', '${booking.rideId}')">Accept</button>
+            <button class="btn-secondary" style="flex: 1; border-color: var(--danger); color: var(--danger);" onclick="rejectRequestedBooking('${booking.id}')">Decline</button>
+        </div>
+    `;
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+}
+
+window.acceptRequestedBooking = async function(bookingId, rideId) {
+    const existingModal = document.getElementById('driverRequestModal');
+    const existingBackdrop = document.getElementById('driverRequestBackdrop');
+    if (existingModal) existingModal.remove();
+    if (existingBackdrop) existingBackdrop.remove();
+
+    await acceptBooking(bookingId, rideId);
+};
+
+window.rejectRequestedBooking = async function(bookingId) {
+    const existingModal = document.getElementById('driverRequestModal');
+    const existingBackdrop = document.getElementById('driverRequestBackdrop');
+    if (existingModal) existingModal.remove();
+    if (existingBackdrop) existingBackdrop.remove();
+
+    await rejectBooking(bookingId);
+};
