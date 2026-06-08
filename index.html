@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uniride - Share Rides, Save Money</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar">
@@ -20,12 +22,118 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="container">
-            <h1>Share Rides with Fellow Students</h1>
-            <p class="subtitle">Eco-friendly, cost-effective carpooling for college students</p>
-            <div class="hero-buttons">
-                <button class="btn-large btn-primary" id="getStartedBtn">Get Started</button>
-                <button class="btn-large btn-secondary" id="learnMoreBtn">Learn More</button>
+        <div class="container hero-grid">
+            <div class="hero-content">
+                <h1>Share Rides with Fellow Students</h1>
+                <p class="subtitle">Eco-friendly, cost-effective carpooling for college students</p>
+                <div class="hero-buttons">
+                    <button class="btn-large btn-primary" id="getStartedBtn">Get Started</button>
+                    <button class="btn-large btn-secondary" id="learnMoreBtn">Learn More</button>
+                </div>
+            </div>
+            <div class="hero-graphic-container">
+                <div class="scene-3d">
+                    <div class="plane-3d">
+                        <!-- 3D Road Block -->
+                        <div class="cube-3d road"
+                            style="--w: 420px; --h: 120px; --d: 10px; left: -35px; top: 115px; transform: translateZ(-5px);">
+                            <div class="cube-face cube-face-top road-top"></div>
+                            <div class="cube-face cube-face-bottom road-bottom"></div>
+                            <div class="cube-face cube-face-front road-front"></div>
+                            <div class="cube-face cube-face-back road-back"></div>
+                            <div class="cube-face cube-face-left road-left"></div>
+                            <div class="cube-face cube-face-right road-right"></div>
+                        </div>
+
+                        <!-- 3D Car -->
+                        <div class="car-3d">
+                            <!-- Chassis -->
+                            <div class="cube-3d chassis"
+                                style="--w: 100px; --h: 50px; --d: 25px; left: 0px; top: 0px; transform: translateZ(12.5px);">
+                                <div class="cube-face cube-face-top chassis-top"></div>
+                                <div class="cube-face cube-face-bottom chassis-bottom"></div>
+                                <div class="cube-face cube-face-front chassis-front"></div>
+                                <div class="cube-face cube-face-back chassis-back"></div>
+                                <div class="cube-face cube-face-left chassis-left"></div>
+                                <div class="cube-face cube-face-right chassis-right"></div>
+                            </div>
+                            <!-- Cabin -->
+                            <div class="cube-3d cabin"
+                                style="--w: 50px; --h: 40px; --d: 20px; left: 25px; top: 5px; transform: translateZ(35px);">
+                                <div class="cube-face cube-face-top cabin-top"></div>
+                                <div class="cube-face cube-face-bottom cabin-bottom"></div>
+                                <div class="cube-face cube-face-front cabin-front"></div>
+                                <div class="cube-face cube-face-back cabin-back"></div>
+                                <div class="cube-face cube-face-left cabin-left"></div>
+                                <div class="cube-face cube-face-right cabin-right"></div>
+                            </div>
+                            <!-- Wheels -->
+                            <div class="car-wheel-3d wheel-fl"></div>
+                            <div class="car-wheel-3d wheel-fr"></div>
+                            <div class="car-wheel-3d wheel-bl"></div>
+                            <div class="car-wheel-3d wheel-br"></div>
+                        </div>
+
+                        <!-- 3D Tree 1 -->
+                        <div class="tree-3d tree-1">
+                            <!-- Trunk -->
+                            <div class="cube-3d trunk"
+                                style="--w: 12px; --h: 12px; --d: 40px; left: 0px; top: 0px; transform: translateZ(20px);">
+                                <div class="cube-face cube-face-top trunk-face"></div>
+                                <div class="cube-face cube-face-bottom trunk-face"></div>
+                                <div class="cube-face cube-face-front trunk-face"></div>
+                                <div class="cube-face cube-face-back trunk-face"></div>
+                                <div class="cube-face cube-face-left trunk-face"></div>
+                                <div class="cube-face cube-face-right trunk-face"></div>
+                            </div>
+                            <!-- Foliage -->
+                            <div class="cube-3d foliage"
+                                style="--w: 40px; --h: 40px; --d: 40px; left: -14px; top: -14px; transform: translateZ(60px);">
+                                <div class="cube-face cube-face-top foliage-face"></div>
+                                <div class="cube-face cube-face-bottom foliage-face"></div>
+                                <div class="cube-face cube-face-front foliage-face"></div>
+                                <div class="cube-face cube-face-back foliage-face"></div>
+                                <div class="cube-face cube-face-left foliage-face"></div>
+                                <div class="cube-face cube-face-right foliage-face"></div>
+                            </div>
+                        </div>
+
+                        <!-- 3D Tree 2 -->
+                        <div class="tree-3d tree-2">
+                            <!-- Trunk -->
+                            <div class="cube-3d trunk"
+                                style="--w: 12px; --h: 12px; --d: 40px; left: 0px; top: 0px; transform: translateZ(20px);">
+                                <div class="cube-face cube-face-top trunk-face"></div>
+                                <div class="cube-face cube-face-bottom trunk-face"></div>
+                                <div class="cube-face cube-face-front trunk-face"></div>
+                                <div class="cube-face cube-face-back trunk-face"></div>
+                                <div class="cube-face cube-face-left trunk-face"></div>
+                                <div class="cube-face cube-face-right trunk-face"></div>
+                            </div>
+                            <!-- Foliage -->
+                            <div class="cube-3d foliage"
+                                style="--w: 40px; --h: 40px; --d: 40px; left: -14px; top: -14px; transform: translateZ(60px);">
+                                <div class="cube-face cube-face-top foliage-face"></div>
+                                <div class="cube-face cube-face-bottom foliage-face"></div>
+                                <div class="cube-face cube-face-front foliage-face"></div>
+                                <div class="cube-face cube-face-back foliage-face"></div>
+                                <div class="cube-face cube-face-left foliage-face"></div>
+                                <div class="cube-face cube-face-right foliage-face"></div>
+                            </div>
+                        </div>
+
+                        <!-- 3D Cloud -->
+                        <div class="cube-3d cloud"
+                            style="--w: 90px; --h: 40px; --d: 30px; left: 200px; top: 20px; transform: translateZ(120px);">
+                            <div class="cube-face cube-face-top cloud-face"></div>
+                            <div class="cube-face cube-face-bottom cloud-face"></div>
+                            <div class="cube-face cube-face-front cloud-face"></div>
+                            <div class="cube-face cube-face-back cloud-face"></div>
+                            <div class="cube-face cube-face-left cloud-face"></div>
+                            <div class="cube-face cube-face-right cloud-face"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -113,18 +221,18 @@
                     <input type="text" id="signupName" required>
                 </div>
                 <div class="form-group">
-                    <label>College Email</label>
+                    <label id="signupEmailLabel">College Email</label>
                     <input type="email" id="signupEmail" required>
                 </div>
                 <div class="form-group">
                     <label>Phone Number</label>
                     <input type="tel" id="signupPhone" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="collegeIdGroup">
                     <label>College ID</label>
                     <input type="text" id="signupCollegeId" required>
                 </div>
-                <div class="form-row">
+                <div class="form-row" id="branchYearGroup">
                     <div class="form-group">
                         <label>Branch</label>
                         <input type="text" id="signupBranch" placeholder="e.g., CSE" required>
@@ -140,7 +248,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <!-- Vehicle info - shown only for drivers -->
                 <div class="form-group" id="vehicleInfoGroup" style="display:none;">
                     <label>Vehicle Information</label>
@@ -165,10 +273,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
+
     <!-- Your Scripts -->
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
 </body>
+
 </html>
