@@ -20,18 +20,44 @@ if (loginForm) {
 // Signup Form with Role Selection
 const signupForm = document.getElementById('signupForm');
 if (signupForm) {
-    // Show/hide vehicle info based on role
+    // Show/hide vehicle info and other fields based on role
     const roleInputs = document.querySelectorAll('input[name="role"]');
     const vehicleGroup = document.getElementById('vehicleInfoGroup');
+    const collegeIdGroup = document.getElementById('collegeIdGroup');
+    const branchYearGroup = document.getElementById('branchYearGroup');
+    const emailLabel = document.getElementById('signupEmailLabel');
+    const collegeIdInput = document.getElementById('signupCollegeId');
+    const branchInput = document.getElementById('signupBranch');
+    const yearSelect = document.getElementById('signupYear');
+
+    const updateSignupFieldsForRole = (role) => {
+        if (role === 'driver') {
+            if (vehicleGroup) vehicleGroup.style.display = 'block';
+            if (collegeIdGroup) collegeIdGroup.style.display = 'none';
+            if (branchYearGroup) branchYearGroup.style.display = 'none';
+            if (emailLabel) emailLabel.textContent = 'Email';
+            
+            // Remove required attributes
+            if (collegeIdInput) collegeIdInput.removeAttribute('required');
+            if (branchInput) branchInput.removeAttribute('required');
+            if (yearSelect) yearSelect.removeAttribute('required');
+        } else {
+            if (vehicleGroup) vehicleGroup.style.display = 'none';
+            if (collegeIdGroup) collegeIdGroup.style.display = 'block';
+            if (branchYearGroup) branchYearGroup.style.display = 'grid';
+            if (emailLabel) emailLabel.textContent = 'College Email';
+            
+            // Add required attributes
+            if (collegeIdInput) collegeIdInput.setAttribute('required', '');
+            if (branchInput) branchInput.setAttribute('required', '');
+            if (yearSelect) yearSelect.setAttribute('required', '');
+        }
+    };
     
-    if (roleInputs && vehicleGroup) {
+    if (roleInputs) {
         roleInputs.forEach(input => {
             input.addEventListener('change', (e) => {
-                if (e.target.value === 'driver') {
-                    vehicleGroup.style.display = 'block';
-                } else {
-                    vehicleGroup.style.display = 'none';
-                }
+                updateSignupFieldsForRole(e.target.value);
             });
         });
     }
@@ -42,15 +68,16 @@ if (signupForm) {
         const name = document.getElementById('signupName').value;
         const email = document.getElementById('signupEmail').value;
         const phone = document.getElementById('signupPhone').value;
-        const collegeId = document.getElementById('signupCollegeId').value;
-        const branch = document.getElementById('signupBranch').value;
-        const year = parseInt(document.getElementById('signupYear').value);
         const password = document.getElementById('signupPassword').value;
         const confirmPassword = document.getElementById('signupConfirmPassword').value;
         
         // Get selected role
         const roleRadio = document.querySelector('input[name="role"]:checked');
         let role = roleRadio ? roleRadio.value : 'student';
+        
+        const collegeId = role === 'student' ? document.getElementById('signupCollegeId').value : '';
+        const branch = role === 'student' ? document.getElementById('signupBranch').value : '';
+        const year = role === 'student' ? (parseInt(document.getElementById('signupYear').value) || 0) : 0;
         
         // Get vehicle info (optional, for drivers)
         const vehicleInfoInput = document.getElementById('signupVehicle');
