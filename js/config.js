@@ -12,6 +12,10 @@ firebase.initializeApp(firebaseConfig);
 
 // Initialize services - CRITICAL!
 const auth = firebase.auth();
+auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+  .catch((error) => {
+    console.error("Failed to set auth persistence:", error);
+  });
 const db = firebase.firestore();
 
 // Helper function for toast messages
@@ -64,8 +68,31 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('en-US', options);
 }
 
+// Safe ride date-time parser
+function parseRideDateTime(ride) {
+    if (!ride) return new Date(0);
+    if (ride.dateTime) {
+        if (typeof ride.dateTime.toDate === 'function') {
+            return ride.dateTime.toDate();
+        }
+        if (ride.dateTime.seconds !== undefined) {
+            return new Date(ride.dateTime.seconds * 1000 + (ride.dateTime.nanoseconds || 0) / 1000000);
+        }
+    }
+    if (ride.date) {
+        const [year, month, day] = ride.date.split('-').map(Number);
+        const [hours, minutes] = (ride.time || '00:00').split(':').map(Number);
+        return new Date(year, month - 1, day, hours, minutes);
+    }
+    return new Date(0);
+}
+
 // Check auth state and redirect
 auth.onAuthStateChanged(async (user) => {
+    if (window.isSigningUp) {
+        console.log("onAuthStateChanged: Signup in progress, skipping auto-redirect.");
+        return;
+    }
     const currentPage = window.location.pathname;
     const isLoginPage = currentPage.includes('index.html') || 
                         currentPage === '/' ||
